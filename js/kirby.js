@@ -1,195 +1,189 @@
 ﻿
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+//var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game');
 
-function preload() {
-    game.load.image('kirby', 'assets/kirby.png');
-    game.load.image('kirbychocolate', 'assets/kirbychocolate.png');
-    game.load.image('sky', 'assets/sky.png');
-    game.load.image('ground', 'assets/platform.png');
-    game.load.image('star', 'assets/star.png');
-    game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+var Kirby = function () {
+    this.prizesTotal = 20;
+    this.prizesPickedUp = 0;
 
-    //game.load.audio('music', 'assets/music/tommy_in_goa.mp3');
-    game.load.audio('music', 'assets/music/oedipus_ark_pandora.mp3');
-    game.load.audio('pickup', 'assets/sounds/p-ping.mp3');
-    game.load.audio('leveldone', 'assets/sounds/lazer_off_wall.mp3');
-    game.load.audio('scary', 'assets/sounds/magical_horror_audiosprite.mp3');
+    this.music;
+    this.pickup;
+    this.leveldone;
+
+    this.player;
+    this.platforms;
+    this.cursors;
+
+    this.stars;
+    
+    this.score = 0;
+    this.scoreText;
 }
 
-var prizesTotal = 20;
-var prizesPickedUp = 0;
+Kirby.prototype = {
 
-var music;
-var pickup;
-var leveldone;
+    init: function () {
+        
+    },
 
-var player;
-var platforms;
-var cursors;
+    preload: function() {
 
-var stars;
-var score = 0;
-var scoreText;
+        this.load.image('kirby', 'assets/kirby.png');
+        this.load.image('kirbychocolate', 'assets/kirbychocolate.png');
+        this.load.image('sky', 'assets/sky.png');
+        this.load.image('ground', 'assets/platform.png');
+        this.load.image('star', 'assets/star.png');
+        this.load.spritesheet('dude', 'assets/dude.png', 32, 48);
 
-function create() {
-    // We're going to be using physics, so enable the Arcade Physics system
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+        //game.load.audio('music', 'assets/music/tommy_in_goa.mp3');
+        this.load.audio('music', 'assets/music/oedipus_ark_pandora.mp3');
+        this.load.audio('pickup', 'assets/sounds/p-ping.mp3');
+        //this.load.audio('leveldone', 'assets/sounds/lazer_off_wall.mp3');
+        this.load.audio('scary', 'assets/sounds/magical_horror_audiosprite.mp3');
+    },
 
-    music = game.add.audio('music');
-    music.play();
+    create: function() {game.physics.startSystem(Phaser.Physics.ARCADE);
+        this.music = game.add.audio('music');
+        this.music.play();
 
-    pickup = game.add.audio("pickup");
-    leveldone = game.add.audio("leveldone");
+        this.pickup = game.add.audio("pickup");
+        this.leveldone = game.add.audio("leveldone");
 
-    // A simple background for our game
-    game.add.sprite(0, 0, 'sky');
+        // A simple background for our game
+        game.add.sprite(0, 0, 'sky');
 
-    addGround();
-    addPlayer();
-    addStars();
+        this.addGround();
+        this.addPlayer();
+        this.addStars();
 
-    // The score label
-    scoreText = game.add.text(16, 16, 'Score 0', { fontSize: '32px', fill: '#000' });
+        // The score label
+        this.scoreText = game.add.text(16, 16, 'Score 0', { fontSize: '32px', fill: '#000' });
 
-    // Our controls.
-    cursors = game.input.keyboard.createCursorKeys();
-}
+        // Our controls.
+        this.cursors = game.input.keyboard.createCursorKeys();
+    },
 
+    addGround: function () {
 
+        function addLedge(platforms, left, top, width) {
+            var ledge = platforms.create(left, top, 'ground');
+            ledge.scale.setTo(width, .3);
+            ledge.body.immovable = true;
+        }
 
-function addGround() {
+        //  The platforms group contains the ground and the 2 ledges we can jump on
+        //platforms = game.add.group();
+        this.platforms = game.add.physicsGroup();
 
-    function addLedge(left, top, width) {
-        var ledge = platforms.create(left, top, 'ground');
-        ledge.scale.setTo(width, .3);
-        ledge.body.immovable = true;
+        //  We will enable physics for any object that is created in this group
+        this.platforms.enableBody = true;
+
+        addLedge(this.platforms, 0, game.world.height - 10, 2)
+
+        addLedge(this.platforms, 50, 100, .3);
+        addLedge(this.platforms, 100, 250, .3);
+        addLedge(this.platforms, 200, 500, .3);
+        addLedge(this.platforms, 300, 200, .3);
+        addLedge(this.platforms, 400, 400, .3);
+        addLedge(this.platforms, 500, 300, .3);
+        addLedge(this.platforms, 500, 150, .3);
+
+        //platforms.setAll('body.allowGravity', false);
+        //platforms.setAll('body.immovable', true);
+        //platforms.setAll('body.velocity.x', 50);
+    },
+
+    addPlayer: function() {
+        // The player and its settings
+        //player = game.add.sprite(32, game.world.height - 150, 'dude');
+        this.player = game.add.sprite(32, game.world.height - 150, 'kirby');
+
+        //  We need to enable physics on the player
+        game.physics.arcade.enable(this.player);
+
+        //  Player physics properties. Give the little guy a slight bounce.
+        this.player.body.bounce.y = 0.2;
+        this.player.body.gravity.y = 500;
+        this.player.body.collideWorldBounds = true;
+
+        //  Our two animations, walking left and right.
+        this.player.animations.add('left', [0, 1, 2, 3], 10, true);
+        this.player.animations.add('right', [5, 6, 7, 8], 10, true);
+    },
+
+    addStars: function() {
+        this.stars = game.add.group();
+
+        //  We will enable physics for any star that is created in this group
+        this.stars.enableBody = true;
+
+        //  Here we'll create 12 of them evenly spaced apart
+        for (var i = 0; i < this.prizesTotal; i++) {
+            //  Create a star inside of the 'stars' group
+            var star = this.stars.create(i * 35, 0, 'kirbychocolate');
+            //  Let gravity do its thing
+            star.body.gravity.y = 300;
+            //  This just gives each star a slightly random bounce value
+            star.body.bounce.y = 0.7 + Math.random() * 0.2;
+        }
+    },
+
+    update: function() {
+
+        //platforms.forEach(wrapPlatform, this);
+
+        //  Collide the player and the stars with the platforms
+        game.physics.arcade.collide(this.player, this.platforms);
+        game.physics.arcade.collide(this.stars, this.platforms);
+
+        //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+        game.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this);
+
+        //  Reset the players velocity (movement)
+        this.player.body.velocity.x = 0;
+
+        if (this.cursors.left.isDown) {
+            //  Move to the left
+            this.player.body.velocity.x = -150;
+            this.player.animations.play('left');
+        }
+        else if (this.cursors.right.isDown) {
+            //  Move to the right
+            this.player.body.velocity.x = 150;
+            this.player.animations.play('right');
+        }
+        else {
+            //  Stand still
+            this.player.animations.stop();
+            this.player.frame = 4;
+        }
+
+        //  Allow the player to jump if they are touching the ground.
+        if (this.cursors.up.isDown && this.player.body.touching.down) {
+            this.player.body.velocity.y = -350;
+        }
+    },
+
+    collectStar: function(player, star) {
+        
+        // Removes the star from the screen
+        star.kill();
+        this.pickup.play();
+
+        //  Add and update the score
+        this.score += 10;
+        this.scoreText.text = 'Score ' + this.score;
+
+        this.prizesPickedUp++;
+        if (this.prizesPickedUp == this.prizesTotal)
+            this.endLevel();
+    },
+
+    endLevel: function () {
+        this.music.stop();
+        this.leveldone.play();
     }
-
-    //  The platforms group contains the ground and the 2 ledges we can jump on
-    //platforms = game.add.group();
-    platforms = game.add.physicsGroup();
-
-    //  We will enable physics for any object that is created in this group
-    platforms.enableBody = true;
-
-    addLedge(0, game.world.height - 10, 2)
-
-    addLedge(50, 100, .3);
-    addLedge(100, 250, .3);
-    addLedge(200, 500, .3);
-    addLedge(300, 200, .3);
-    addLedge(400, 400, .3);
-    addLedge(500, 300, .3);
-    addLedge(500, 150, .3);
-
-    //platforms.setAll('body.allowGravity', false);
-    //platforms.setAll('body.immovable', true);
-    //platforms.setAll('body.velocity.x', 50);
 }
 
+game.state.add('Game', Kirby, true);
 
-function addPlayer() {
-    // The player and its settings
-    //player = game.add.sprite(32, game.world.height - 150, 'dude');
-    player = game.add.sprite(32, game.world.height - 150, 'kirby');
-
-    //  We need to enable physics on the player
-    game.physics.arcade.enable(player);
-
-    //  Player physics properties. Give the little guy a slight bounce.
-    player.body.bounce.y = 0.2;
-    player.body.gravity.y = 500;
-    player.body.collideWorldBounds = true;
-
-    //  Our two animations, walking left and right.
-    player.animations.add('left', [0, 1, 2, 3], 10, true);
-    player.animations.add('right', [5, 6, 7, 8], 10, true);
-}
-
-
-function wrapPlatform(platform) {
-    //if (platform.body.velocity.x < 0 && platform.x <= -160)
-    //{
-    //    platform.x = 640;
-    //}
-    //else
-
-    if (platform.body.velocity.x > 0 && platform.x >= 800) {
-        debugger;
-        platform.x = 0;
-    }
-
-}
-
-function addStars() {
-    stars = game.add.group();
-
-    //  We will enable physics for any star that is created in this group
-    stars.enableBody = true;
-
-    //  Here we'll create 12 of them evenly spaced apart
-    for (var i = 0; i < prizesTotal; i++) {
-        //  Create a star inside of the 'stars' group
-        var star = stars.create(i * 35, 0, 'kirbychocolate');
-        //  Let gravity do its thing
-        star.body.gravity.y = 300;
-        //  This just gives each star a slightly random bounce value
-        star.body.bounce.y = 0.7 + Math.random() * 0.2;
-    }
-}
-
-function update() {
-
-    //platforms.forEach(wrapPlatform, this);
-
-
-    //  Collide the player and the stars with the platforms
-    game.physics.arcade.collide(player, platforms);
-    game.physics.arcade.collide(stars, platforms);
-
-    //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-    game.physics.arcade.overlap(player, stars, collectStar, null, this);
-
-    //  Reset the players velocity (movement)
-    player.body.velocity.x = 0;
-
-    if (cursors.left.isDown) {
-        //  Move to the left
-        player.body.velocity.x = -150;
-        player.animations.play('left');
-    }
-    else if (cursors.right.isDown) {
-        //  Move to the right
-        player.body.velocity.x = 150;
-        player.animations.play('right');
-    }
-    else {
-        //  Stand still
-        player.animations.stop();
-        player.frame = 4;
-    }
-
-    //  Allow the player to jump if they are touching the ground.
-    if (cursors.up.isDown && player.body.touching.down) {
-        player.body.velocity.y = -350;
-    }
-}
-
-function collectStar(player, star) {
-    // Removes the star from the screen
-    star.kill();
-    pickup.play();
-
-    //  Add and update the score
-    score += 10;
-    scoreText.text = 'Score ' + score;
-
-    prizesPickedUp++;
-    if (prizesPickedUp == prizesTotal)
-        endLevel();
-}
-
-function endLevel() {
-    music.stop();
-    //leveldone.play();
-}
