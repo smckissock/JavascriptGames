@@ -12,12 +12,15 @@ var Kirby = function () {
 
     this.player;
     this.platforms;
+    this.floor;
     this.cursors;
 
     this.stars;
     
     this.score = 0;
     this.scoreText;
+
+    this.frameCount = 0;
 }
 
 Kirby.prototype = {
@@ -32,6 +35,7 @@ Kirby.prototype = {
         this.load.image('kirbychocolate', 'assets/kirbychocolate.png');
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
+        this.load.image('ice', 'assets/ice-platform.png');
         this.load.image('star', 'assets/star.png');
         this.load.spritesheet('dude', 'assets/dude.png', 32, 48);
 
@@ -57,7 +61,7 @@ Kirby.prototype = {
         this.addStars();
 
         // The score label
-        this.scoreText = game.add.text(16, 16, 'Score 0', { fontSize: '32px', fill: '#000' });
+        this.scoreText = game.add.text(4, 4, 'Score 0', { fontSize: '16px', fill: '#000' });
 
         // Our controls.
         this.cursors = game.input.keyboard.createCursorKeys();
@@ -66,7 +70,7 @@ Kirby.prototype = {
     addGround: function () {
 
         function addLedge(platforms, left, top, width) {
-            var ledge = platforms.create(left, top, 'ground');
+            var ledge = platforms.create(left, top, 'ice');
             ledge.scale.setTo(width, .3);
             ledge.body.immovable = true;
         }
@@ -74,23 +78,26 @@ Kirby.prototype = {
         //  The platforms group contains the ground and the 2 ledges we can jump on
         //platforms = game.add.group();
         this.platforms = game.add.physicsGroup();
+        this.floor = game.add.physicsGroup();
 
         //  We will enable physics for any object that is created in this group
         this.platforms.enableBody = true;
+        this.floor.enableBody = true;
+        
+        addLedge(this.floor, 0, game.world.height - 10, 5)
 
-        addLedge(this.platforms, 0, game.world.height - 10, 2)
+        var width = .9;
+        addLedge(this.platforms, 200, 100, width);
+        addLedge(this.platforms, 250, 250, width);
+        addLedge(this.platforms, 350, 500, width);
+        addLedge(this.platforms, 450, 200, width);
+        addLedge(this.platforms, 550, 400, width);
+        addLedge(this.platforms, 650, 300, width);
+        addLedge(this.platforms, 650, 150, width);
 
-        addLedge(this.platforms, 50, 100, .3);
-        addLedge(this.platforms, 100, 250, .3);
-        addLedge(this.platforms, 200, 500, .3);
-        addLedge(this.platforms, 300, 200, .3);
-        addLedge(this.platforms, 400, 400, .3);
-        addLedge(this.platforms, 500, 300, .3);
-        addLedge(this.platforms, 500, 150, .3);
-
-        //platforms.setAll('body.allowGravity', false);
-        //platforms.setAll('body.immovable', true);
-        //platforms.setAll('body.velocity.x', 50);
+        this.platforms.setAll('body.allowGravity', false);
+        this.platforms.setAll('body.immovable', true);
+        this.platforms.setAll('body.velocity.x', -50);
     },
 
     addPlayer: function() {
@@ -120,11 +127,11 @@ Kirby.prototype = {
         //  Here we'll create 12 of them evenly spaced apart
         for (var i = 0; i < this.prizesTotal; i++) {
             //  Create a star inside of the 'stars' group
-            var star = this.stars.create(i * 35, 0, 'kirbychocolate');
+            var star = this.stars.create(i * 35, 0, 'star');
             //  Let gravity do its thing
-            star.body.gravity.y = 300;
+            star.body.gravity.y = 200;
             //  This just gives each star a slightly random bounce value
-            star.body.bounce.y = 0.7 + Math.random() * 0.2;
+            star.body.bounce.y = 0.4 + Math.random() * 0.2;
         }
     },
 
@@ -135,6 +142,9 @@ Kirby.prototype = {
         //  Collide the player and the stars with the platforms
         game.physics.arcade.collide(this.player, this.platforms);
         game.physics.arcade.collide(this.stars, this.platforms);
+
+        game.physics.arcade.collide(this.player, this.floor);
+        game.physics.arcade.collide(this.stars, this.floor);
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         game.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this);
@@ -161,6 +171,14 @@ Kirby.prototype = {
         //  Allow the player to jump if they are touching the ground.
         if (this.cursors.up.isDown && this.player.body.touching.down) {
             this.player.body.velocity.y = -350;
+        }
+
+        this.frameCount++;
+        if (this.frameCount % 100 == 0) {
+            if (this.frameCount % 200 == 0)
+                this.platforms.setAll('body.velocity.x', 50);
+            else
+                this.platforms.setAll('body.velocity.x', -50);
         }
     },
 
