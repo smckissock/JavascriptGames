@@ -75,6 +75,7 @@ Kirby.prototype = {
             ledge.body.immovable = true;
         }
 
+
         //  The platforms group contains the ground and the 2 ledges we can jump on
         //platforms = game.add.group();
         this.platforms = game.add.physicsGroup();
@@ -84,7 +85,7 @@ Kirby.prototype = {
         this.platforms.enableBody = true;
         this.floor.enableBody = true;
         
-        addLedge(this.floor, 0, game.world.height - 10, 5)
+        addLedge(this.floor, 0, game.world.height - 10, 6.2)
 
         var width = .9;
         addLedge(this.platforms, 200, 100, width);
