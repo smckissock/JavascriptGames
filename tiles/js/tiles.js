@@ -10,8 +10,8 @@ var PhaserGame = function (game) {
     this.leftZone = new Phaser.Rectangle(-32, 0, 32, 480);
     this.rightZone = new Phaser.Rectangle(640, 0, 32, 480);
     
-    this.ladder = [ 359, 389, 449, 419, 212, 242, 272, 302, 182 ];
-
+    this.ladder = [359, 389, 449, 419, 212, 242, 272, 302, 182];
+    this.portal = [63, 64, 93, 94, 409, 410, 439, 440];
 };
 
 PhaserGame.prototype = {
@@ -34,12 +34,15 @@ PhaserGame.prototype = {
         this.load.spritesheet('wizard', 'assets/wizard.png', 32, 32);
         //this.load.image('wizard', 'kirby.png', 32, 32);
 
+        this.load.audio('portalSound', 'assets/sounds/player_death.wav');
         this.load.audio('music', 'assets/music/Totta-HeroQuest-Pophousedub-remix.mp3');
     },
 
     create: function () {
         this.music = game.add.audio('music');
         this.music.play();
+
+        this.portalSound = game.add.audio("portalSound");
 
         var sky = this.add.sprite(0, 0, 'sky');
         sky.fixedToCamera = true;
@@ -110,36 +113,48 @@ PhaserGame.prototype = {
                 this.player.body.velocity.y = -420;
         }
 
+        if (this.onPortal())
+            this.portalSound.play();
+            //console.log('PORTAL!!!');
+
         if (this.player.body.velocity.x > 0 && this.player.x >= this.rightZone.x)
             this.flipRight();
         else if (this.player.body.velocity.x < 0 && this.player.x <= this.leftZone.right)
             this.flipLeft();
     },
 
-    flipLeft: function () {
+    flipLeft: function() {
         if (this.camera.x === 0)
             return;
         
         this.leftZone.x -= 640;
         this.rightZone.x -= 640;
-        this.flipTween = this.add.tween(this.camera).to( { x: "-640" }, 500, "Linear", true);
+        this.flipTween = this.add.tween(this.camera).to( { x: "-640" }, 400, "Linear", true);
     },
 
-    flipRight: function () {
+    flipRight: function() {
         if (this.camera.x === this.game.world.width - 640)
             return;
         
         this.leftZone.x += 640;
         this.rightZone.x += 640;
-        this.flipTween = this.add.tween(this.camera).to( { x: "+640" }, 500, "Linear", true);
+        this.flipTween = this.add.tween(this.camera).to( { x: "+640" }, 400, "Linear", true);
     },
 
-    onLadder: function () {
+    onLadder: function() {
         var x = this.layer.getTileX(this.player.x);
         var y = this.layer.getTileY(this.player.y);
         var tile = this.map.getTile(x, y, this.layer);
 
         return (tile !== null && this.ladder.indexOf(tile.index) > -1);
+    },
+
+    onPortal: function() {
+        var x = this.layer.getTileX(this.player.x);
+        var y = this.layer.getTileY(this.player.y);
+        var tile = this.map.getTile(x, y, this.layer);
+
+        return (tile !== null && this.portal.indexOf(tile.index) > -1);
     }
 };
 
