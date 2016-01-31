@@ -1,4 +1,6 @@
-var game = new Phaser.Game(640, 480, Phaser.AUTO, 'game');
+
+//var game = new Phaser.Game(640, 480, Phaser.AUTO, 'game');
+var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 
 var PhaserGame = function (game) {
 
@@ -12,6 +14,10 @@ var PhaserGame = function (game) {
     
     this.ladder = [359, 389, 449, 419, 212, 242, 272, 302, 182];
     this.portal = [63, 64, 93, 94, 409, 410, 439, 440];
+
+    this.width = 5120;
+    this.height = 2880;
+
 };
 
 PhaserGame.prototype = {
@@ -28,7 +34,7 @@ PhaserGame.prototype = {
         this.load.image('tiles', 'assets/tiles.png');
         this.load.image('sky', 'assets/sky.png');
 
-        this.load.tilemap('map', 'assets/willkai.json', null, Phaser.Tilemap.TILED_JSON);
+        this.load.tilemap('map', 'assets/big.json', null, Phaser.Tilemap.TILED_JSON);
         //this.load.tilemap('map', 'js/map.json', null, Phaser.Tilemap.TILED_JSON);
        
         this.load.spritesheet('wizard', 'assets/wizard.png', 32, 32);
@@ -61,7 +67,8 @@ PhaserGame.prototype = {
             342, 343, 345, 346, 347, 348, 349,
             328, 352, 353, 354, 355, 356, 357, 358, 360, 382, 383, 384,
             412, 413, 414, 415, 416, 417, 418, 442, 443, 443, 445, 446, 447, 448, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480,
-            511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540,
+            496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508,
+            509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540,
             541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570,
             571, 572, 573, 574, 575, 576
         ]);
@@ -79,6 +86,8 @@ PhaserGame.prototype = {
         this.player.body.gravity.y = 500;
 
         this.cursors = this.input.keyboard.createCursorKeys();
+
+        this.game.camera.follow(this.player);
     },
 
     update: function () {
@@ -103,14 +112,16 @@ PhaserGame.prototype = {
         
         var onLadder = this.onLadder();
         if (this.cursors.up.isDown && onLadder) 
-            this.player.body.velocity.y = -100;
+            this.player.body.velocity.y = -350;
         else if (this.cursors.down.isDown && onLadder) 
-            this.player.body.velocity.y = 100;
+            this.player.body.velocity.y = 350;
         
+        console.log(onLadder);
+
         if (!onLadder) {
             //  Allow the player to jump if they are touching the ground.
             if (this.cursors.up.isDown && this.player.body.onFloor()) 
-                this.player.body.velocity.y = -420;
+                this.player.body.velocity.y = -450;
         }
 
         if (this.onPortal())
@@ -141,7 +152,7 @@ PhaserGame.prototype = {
         this.flipTween = this.add.tween(this.camera).to( { x: "+640" }, 400, "Linear", true);
     },
 
-    onLadder: function() {
+    onLadder: function () {
         var x = this.layer.getTileX(this.player.x);
         var y = this.layer.getTileY(this.player.y);
         var tile = this.map.getTile(x, y, this.layer);
