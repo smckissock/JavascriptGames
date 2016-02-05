@@ -19,6 +19,8 @@ var PhaserGame = function (game) {
     this.width = 5120;
     this.height = 2880;
 
+    this.score = 0;
+    this.scoreText;
 };
 
 PhaserGame.prototype = {
@@ -90,6 +92,9 @@ PhaserGame.prototype = {
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
+        this.scoreText = game.add.text(4, 4, 'Score 0', { fontSize: '16px', fill: '#000' });
+        this.scoreText.fixedToCamera = true;
+
         this.game.camera.follow(this.player);
     },
 
@@ -120,6 +125,8 @@ PhaserGame.prototype = {
         if (onMushroom) {
             this.map.replace(444, 437, this.layer.getTileX(this.player.x), this.layer.getTileY(this.player.y), 1, 1, 0);
             this.pickup.play();
+            this.score += 10;
+            this.scoreText.text = 'Score ' + this.score;
         }
 
         var onLadder = this.onLadder();
@@ -128,8 +135,6 @@ PhaserGame.prototype = {
         else if (this.cursors.down.isDown && onLadder) 
             this.player.body.velocity.y = 350;
         
-        //console.log(onLadder);
-
         if (!onLadder) {
             //  Allow the player to jump if they are touching the ground.
             if (this.cursors.up.isDown && this.player.body.onFloor()) 
@@ -138,8 +143,7 @@ PhaserGame.prototype = {
 
         if (this.onPortal())
             this.portalSound.play();
-            //console.log('PORTAL!!!');
-
+        
         if (this.player.body.velocity.x > 0 && this.player.x >= this.rightZone.x)
             this.flipRight();
         else if (this.player.body.velocity.x < 0 && this.player.x <= this.leftZone.right)
