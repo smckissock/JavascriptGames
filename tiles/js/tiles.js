@@ -14,6 +14,7 @@ var PhaserGame = function (game) {
     
     this.ladder = [359, 389, 449, 419, 212, 242, 272, 302, 182];
     this.portal = [63, 64, 93, 94, 409, 410, 439, 440];
+    this.mushroom = 444;
 
     this.width = 5120;
     this.height = 2880;
@@ -42,13 +43,15 @@ PhaserGame.prototype = {
 
         this.load.audio('portalSound', 'assets/sounds/player_death.wav');
         this.load.audio('music', 'assets/music/Totta-HeroQuest-Pophousedub-remix.mp3');
+        this.load.audio('pickup', 'assets/sounds/p-ping.mp3');
     },
 
     create: function () {
         this.music = game.add.audio('music');
-        this.music.play();
+        //this.music.play();
 
         this.portalSound = game.add.audio("portalSound");
+        this.pickup = game.add.audio("pickup");
 
         var sky = this.add.sprite(0, 0, 'sky');
         sky.fixedToCamera = true;
@@ -110,13 +113,22 @@ PhaserGame.prototype = {
         else 
             this.player.animations.stop();
         
+
+        var onMushroom = this.onMushroom();
+        console.log(onMushroom);
+
+        if (onMushroom) {
+            this.map.replace(444, 437, this.layer.getTileX(this.player.x), this.layer.getTileY(this.player.y), 1, 1, 0);
+            this.pickup.play();
+        }
+
         var onLadder = this.onLadder();
         if (this.cursors.up.isDown && onLadder) 
             this.player.body.velocity.y = -350;
         else if (this.cursors.down.isDown && onLadder) 
             this.player.body.velocity.y = 350;
         
-        console.log(onLadder);
+        //console.log(onLadder);
 
         if (!onLadder) {
             //  Allow the player to jump if they are touching the ground.
@@ -158,6 +170,18 @@ PhaserGame.prototype = {
         var tile = this.map.getTile(x, y, this.layer);
 
         return (tile !== null && this.ladder.indexOf(tile.index) > -1);
+    },
+
+    onMushroom: function () {
+        var x = this.layer.getTileX(this.player.x);
+        var y = this.layer.getTileY(this.player.y);
+        var tile = this.map.getTile(x, y, this.layer);
+
+        if (!tile)
+            return false;
+        
+        console.log(tile.index);
+        return tile.index === this.mushroom;
     },
 
     onPortal: function() {
