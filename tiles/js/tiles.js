@@ -81,7 +81,7 @@ PhaserGame.prototype = {
             571, 572, 573, 574, 575, 576
         ]);
 
-        //this.layer.debug = true;
+        this.layer.debug = true;
         this.player = game.add.sprite(32, game.world.height - 150, 'wizard');
 
         this.player.animations.add('right', [0,1,2,3,4,5,6,7], 8, true);
