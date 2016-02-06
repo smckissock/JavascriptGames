@@ -14,7 +14,9 @@ var PhaserGame = function (game) {
     
     this.ladder = [359, 389, 449, 419, 212, 242, 272, 302, 182];
     this.portal = [63, 64, 93, 94, 409, 410, 439, 440];
+    this.grass = 437;
     this.mushroom = 444;
+    this.bigMushroom = 178;
     this.water = [514, 544];
 
     this.width = 5120;
@@ -41,6 +43,7 @@ PhaserGame.prototype = {
         //this.load.tilemap('map', 'js/map.json', null, Phaser.Tilemap.TILED_JSON);
        
         this.load.spritesheet('wizard', 'assets/wizard.png', 32, 32);
+        game.load.spritesheet('ms', 'assets/metalslug_mummy37x45.png', 37, 45, 18);
         //this.load.image('wizard', 'kirby.png', 32, 32);
 
         this.load.audio('portalSound', 'assets/sounds/player_death.wav');
@@ -50,7 +53,7 @@ PhaserGame.prototype = {
 
     create: function () {
         this.music = game.add.audio('music');
-        //this.music.play();
+        this.music.play();
 
         this.portalSound = game.add.audio("portalSound");
         this.pickup = game.add.audio("pickup");
@@ -96,6 +99,12 @@ PhaserGame.prototype = {
         this.scoreText.fixedToCamera = true;
 
         this.game.camera.follow(this.player);
+
+        // Mummy
+        sprite = game.add.sprite(40, 100, 'ms');
+        sprite.animations.add('walk');
+        sprite.animations.play('walk', 50, true);
+        game.add.tween(sprite).to({ x: game.width }, 10000, Phaser.Easing.Linear.None, true);
     },
 
     update: function () {
@@ -120,12 +129,20 @@ PhaserGame.prototype = {
         
 
         var onMushroom = this.onMushroom();
-        console.log(onMushroom);
-
+        //console.log(onMushroom);
         if (onMushroom) {
-            this.map.replace(444, 437, this.layer.getTileX(this.player.x), this.layer.getTileY(this.player.y), 1, 1, 0);
+            this.map.replace(this.mushroom, this.grass, this.layer.getTileX(this.player.x), this.layer.getTileY(this.player.y), 1, 1, 0);
             this.pickup.play();
             this.score += 10;
+            this.scoreText.text = 'Score ' + this.score;
+        }
+
+        var onBigMushroom = this.onBigMushroom();
+        console.log(onBigMushroom);
+        if (onBigMushroom) {
+            this.map.replace(this.bigMushroom, this.grass, this.layer.getTileX(this.player.x), this.layer.getTileY(this.player.y), 1, 1, 0);
+            this.pickup.play();
+            this.score += 50;
             this.scoreText.text = 'Score ' + this.score;
         }
 
@@ -186,6 +203,18 @@ PhaserGame.prototype = {
         
         console.log(tile.index);
         return tile.index === this.mushroom;
+    },
+
+    onBigMushroom: function () {
+        var x = this.layer.getTileX(this.player.x);
+        var y = this.layer.getTileY(this.player.y);
+        var tile = this.map.getTile(x, y, this.layer);
+
+        if (!tile)
+            return false;
+
+        console.log(tile.index);
+        return tile.index === this.bigMushroom;
     },
 
     onPortal: function() {
