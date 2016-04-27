@@ -87,14 +87,26 @@ Kirby.prototype = {
         
         addLedge(this.floor, 0, game.world.height - 10, 6.2)
 
+        console.log(game.world.height + " " + game.world.width);
+
         var width = .9;
-        addLedge(this.platforms, 200, 100, width);
-        addLedge(this.platforms, 250, 250, width);
-        addLedge(this.platforms, 350, 500, width);
-        addLedge(this.platforms, 450, 200, width);
-        addLedge(this.platforms, 550, 400, width);
-        addLedge(this.platforms, 650, 300, width);
-        addLedge(this.platforms, 650, 150, width);
+        addLedge(this.platforms, 1wweew5, 70, width);
+        addLedge(this.platforms, 220, 90, width);
+        addLedge(this.platforms, 450, 160, width);
+        addLedge(this.platforms, 350, 210, width);
+        addLedge(this.platforms, 150, 260, width);
+        addLedge(this.platforms, 320, 340, width);
+        addLedge(this.platforms, 500, 390, width);
+        addLedge(this.platforms, 150, 490, width);
+        addLedge(this.platforms, 350, 460, width);
+
+        //addLedge(this.platforms, 200, 100, width);
+        //addLedge(this.platforms, 250, 250, width);
+        //addLedge(this.platforms, 350, 500, width);
+        //addLedge(this.platforms, 450, 200, width);
+        //addLedge(this.platforms, 550, 400, width);
+        //addLedge(this.platforms, 650, 300, width);
+        //addLedge(this.platforms, 650, 150, width);
 
         this.platforms.setAll('body.allowGravity', false);
         this.platforms.setAll('body.immovable', true);
