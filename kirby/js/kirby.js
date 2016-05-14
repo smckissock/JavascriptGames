@@ -90,7 +90,7 @@ Kirby.prototype = {
         console.log(game.world.height + " " + game.world.width);
 
         var width = .9;
-        addLedge(this.platforms, 1wweew5, 70, width);
+        addLedge(this.platforms, 15, 70, width);
         addLedge(this.platforms, 220, 90, width);
         addLedge(this.platforms, 450, 160, width);
         addLedge(this.platforms, 350, 210, width);
@@ -110,7 +110,7 @@ Kirby.prototype = {
 
         this.platforms.setAll('body.allowGravity', false);
         this.platforms.setAll('body.immovable', true);
-        this.platforms.setAll('body.velocity.x', -50);
+        //this.platforms.setAll('body.velocity.x', -50);
     },
 
     addPlayer: function() {
@@ -189,9 +189,9 @@ Kirby.prototype = {
         this.frameCount++;
         if (this.frameCount % 100 == 0) {
             if (this.frameCount % 200 == 0)
-                this.platforms.setAll('body.velocity.x', 50);
+                this.platforms.setAll('body.velocity.x', 0); // 50
             else
-                this.platforms.setAll('body.velocity.x', -50);
+                this.platforms.setAll('body.velocity.x', 0); // -50
         }
     },
 
